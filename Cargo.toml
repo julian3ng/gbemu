@@ -1,0 +1,10 @@
+[package]
+name = "gbemu"
+version = "0.1.0"
+authors = ["Julian Eng <julian3ng@gmail.com>"]
+
+[dependencies]
+
+[lib]
+name = "gbemu"
+path = "src/lib.rs"

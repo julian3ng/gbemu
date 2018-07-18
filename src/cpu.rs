@@ -1,5 +1,7 @@
 use ::mmu::MMU;
 
+
+#[derive(PartialEq)]
 struct Clock { m: u32, t: u32 }
 
 impl Clock {
@@ -26,6 +28,7 @@ pub struct CPU {
     mmu: MMU
 }
 
+#[allow(dead_code)]
 impl CPU {
     pub fn new() -> Self {
         CPU {
@@ -76,23 +79,23 @@ impl CPU {
 
     // LSBs go into first, MSBs go into second
     fn set_af(&mut self, val: u16) {
-        self.set_a((val & 0x0011) as u8);
-        self.set_f(((val & 0x1100) >> 8) as u8);
+        self.set_a(((val & 0xFF00) >> 8) as u8);
+        self.set_f((val & 0x00FF) as u8);
     }
 
     fn set_bc(&mut self, val: u16) {
-        self.set_b((val & 0x0011) as u8);
-        self.set_c(((val & 0x1100) >> 8) as u8);
+        self.set_b(((val & 0xFF00) >> 8) as u8);
+        self.set_c((val & 0x00FF) as u8);
     }
 
     fn set_de(&mut self, val: u16) {
-        self.set_d((val & 0x0011) as u8);
-        self.set_e(((val & 0x1100) >> 8) as u8);
+        self.set_d(((val & 0xFF00) >> 8) as u8);
+        self.set_e((val & 0x00FF) as u8);
     }
 
     fn set_hl(&mut self, val: u16) {
-        self.set_h((val & 0x0011) as u8);
-        self.set_l(((val & 0x1100) >> 8) as u8);
+        self.set_h(((val & 0xFF00) >> 8) as u8);
+        self.set_l((val & 0x00FF) as u8);
     }    
     
     
@@ -394,4 +397,37 @@ impl CPU {
             self.tick();
         }
     }
+}
+
+#[test]
+fn initialization() {
+    let cpu = CPU::new();
+    assert!(cpu.a() == 0);
+    assert!(cpu.f() == 0);
+    assert!(cpu.b() == 0);
+    assert!(cpu.c() == 0);
+    assert!(cpu.d() == 0);
+    assert!(cpu.e() == 0);
+    assert!(cpu.h() == 0);
+    assert!(cpu.l() == 0);
+    assert!(cpu.af() == 0);
+    assert!(cpu.bc() == 0);
+    assert!(cpu.de() == 0);
+    assert!(cpu.hl() == 0);
+    assert!(cpu.sp == 0);
+    assert!(cpu.pc == 0);
+    assert!(cpu.last_clock_tick == Clock { m: 0, t: 0 });
+    assert!(cpu.clock == Clock { m: 0, t: 0});
+}
+
+#[test]
+fn setters() {
+    let mut cpu = CPU::new();
+    cpu.set_a(1);
+    assert!(cpu.a() == 1);
+    cpu.set_f(2);
+    assert!(cpu.af() == 0x0102);
+    cpu.set_af(0x0203);
+    println!("{:x}", cpu.af());
+    assert!(cpu.af() == 0x0203);
 }

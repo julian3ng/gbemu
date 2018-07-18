@@ -2,6 +2,8 @@ pub struct MMU {
     
 }
 
+#[allow(dead_code)]
+#[allow(unused_variables)]
 impl MMU {
     pub fn new() -> Self {
         MMU { }

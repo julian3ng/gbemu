@@ -1,16 +1,18 @@
 use ::mmu::MMU;
 
 
-#[derive(PartialEq)]
+#[derive(PartialEq, Debug)]
 struct Clock { m: u32, t: u32 }
 
 impl Clock {
     fn set(&mut self, m: u32, t: u32) {
+        assert!(m*4 == t);
         self.m = m;
         self.t = t;
     }
 
     fn update(&mut self, m: u32, t: u32) {
+        assert!(m*4 == t);
         self.m += m;
         self.t += t;
     }
@@ -391,9 +393,12 @@ impl CPU {
     pub fn run(&mut self) {
         loop {
             let opcode = self.mmu.rb(self.pc);
+            println!("{} {:?}", self.pc, self.clock);
             self.pc += 1;
             self.call(opcode);
-            self.pc &= 65535; // why are we doing this?
+            // following line exists to keep pc from overflowing in javascript
+            // we have u16 type so this isn't necessary
+            // self.pc &= 65535; 
             self.tick();
         }
     }
@@ -421,13 +426,53 @@ fn initialization() {
 }
 
 #[test]
-fn setters() {
+fn setters_and_getters() {
     let mut cpu = CPU::new();
     cpu.set_a(1);
-    assert!(cpu.a() == 1);
     cpu.set_f(2);
+    cpu.set_b(3);
+    cpu.set_c(4);
+    cpu.set_d(5);
+    cpu.set_e(6);
+    cpu.set_h(7);
+    cpu.set_l(8);
+    assert!(cpu.a() == 1);
+    assert!(cpu.f() == 2);
+    assert!(cpu.b() == 3);    
+    assert!(cpu.c() == 4);
+    assert!(cpu.d() == 5);
+    assert!(cpu.e() == 6);
+    assert!(cpu.h() == 7);
+    assert!(cpu.l() == 8);    
     assert!(cpu.af() == 0x0102);
-    cpu.set_af(0x0203);
-    println!("{:x}", cpu.af());
-    assert!(cpu.af() == 0x0203);
+    assert!(cpu.bc() == 0x0304);
+    assert!(cpu.de() == 0x0506);
+    assert!(cpu.hl() == 0x0708);
+    cpu.set_af(0x0a0b);
+    cpu.set_bc(0x0c0d);
+    cpu.set_de(0x0e0f);
+    cpu.set_hl(0x0001);
+    assert!(cpu.af() == 0x0a0b);
+    assert!(cpu.bc() == 0x0c0d);
+    assert!(cpu.de() == 0x0e0f);
+    assert!(cpu.hl() == 0x0001);
+}
+
+#[test]
+fn clock() {
+    let mut cpu = CPU::new();
+    cpu.last_clock_tick.set(1, 4);
+    assert!(cpu.last_clock_tick.m == 1);
+    assert!(cpu.last_clock_tick.t == 4);
+    cpu.clock.update(1, 4);
+    cpu.clock.update(3, 12);
+    assert!(cpu.clock.m == 4);
+    assert!(cpu.clock.t == 16);
+}
+
+#[test]
+#[should_panic]
+fn non_multiple_of_4() {
+    let mut cpu = CPU::new();
+    cpu.last_clock_tick.set(1, 5);
 }

@@ -1,0 +1,44 @@
+* README
+** 0. Resources  
+   - [[http://imrannazar.com/GameBoy-Emulation-in-JavaScript][Gameboy Emulator in Javascript Tutorial]]
+   - [[http://problemkaputt.de/pandocs.htm#cpuregistersandflags][Gameboy Pandocs]]
+   - [[http://zenol.fr/gb-doc/gameboy-opcodes.html][Opcode table]]
+   - [[https://avivace.com/apps/gbdev/decoding_gz80.html][Decoding the opcode table]]
+   - [[http://marc.rawer.de/Gameboy/Docs/GBCPUman.pdf][Gameboy Manual]]
+
+** 1. CPU / MMU
+   - [[file:src/cpu.rs::use%20::mmu::MMU;][CPU]]
+     
+
+*** Components
+    - Clock: stores number of cycles in =t= and that value divided by 4 in =m=
+    - CPU
+      - Has eight 8-bit registers arranged in four pairs
+        - A, F
+        - B, C
+        - D, E
+        - H, L
+      - And the stack pointer and program counter
+        - SP
+        - PC
+      - And we want to keep track of the last instruction's duration and the
+        current time elapsed
+        - last_clock_tick
+        - clock
+      - And we need the MMU, which we don't want to pass into the CPU dispatch
+        every time we call it
+        - mmu
+    - Made getters and setters for registers
+    - Made clock setter and incrementer
+    - Now we need memory and a ROM to test things
+
+
+*** Memory
+    - 0000-3FFF: Cartridge ROM, bank 0
+      - 0000-00FF: BIOS - PC starts at 0000. After BIOS is executed, this
+        section becomes addressable
+      - 0100-014F: Data about name and manufacturer in a specific format
+    - 4000-7FFF: Cartridge ROM, other banks - 16k banks of program, can be
+      switched between.
+    - 8000-9FFF: Graphics RAM
+      
